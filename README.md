@@ -2,7 +2,7 @@
 A small Lua module that simplifies the calling of functions at a set interval
 or after a delay.
 
-## Installation
+## Usage
 The [tick.lua](tick.lua?raw=1) file should be dropped into an existing project
 and required by it.
 ```lua
@@ -14,7 +14,7 @@ time since the last call as its argument.
 tick.update(dt)
 ```
 
-### tick.delay(fn, delay)
+#### tick.delay(fn, delay)
 Calls the function `fn` after the given `delay` time has passed. Returns the
 associated event.
 ```lua
@@ -22,7 +22,7 @@ associated event.
 tick.delay(function() print("Hello world!") end, 2)
 ```
 
-### tick.recur(fn, delay)
+#### tick.recur(fn, delay)
 Calls the function `fn` at an interval of `delay`. Returns the associated
 event.
 ```lua
@@ -30,7 +30,7 @@ event.
 tick.recur(function() print("tick!") end, .5)
 ```
 
-## Chaining events
+### Chaining events
 To avoid having to deeply nest several functions when creating chains of
 events, the `:after()` method can be called on an event returned by
 `tick.delay()`. You can keep using the `:after()` method to create complex
@@ -42,7 +42,7 @@ tick.delay(function() print("cat") end, 1)
   :after(function() print("owl") end, 1)
 ```
 
-## Stopping events
+### Stopping events
 An event can be stopped and removed at any point by calling its `:stop()`
 method. To do this the event must be assigned to a variable when it is created.
 ```lua
@@ -52,7 +52,7 @@ local t = tick.delay(function() print("tick!") end, 10)
 t:stop()
 ```
 
-## Groups
+### Groups
 Tick provides the ability to create event groups; these are objects which can
 have events added to them, and which are in charge of updating and handling
 their contained events. A group is created by calling the `tick.group()`

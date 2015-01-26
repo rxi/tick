@@ -11,7 +11,7 @@ tick = require "tick"
 At the start of each frame `tick.update()` should be called and given the delta
 time since the last call as its argument.
 ```lua
-tick.update(deltatime)
+tick.update(dt)
 ```
 
 ### tick.delay(fn, delay)
@@ -64,7 +64,7 @@ local group = tick.group()
 Once a group is created it acts independently of the `tick` object, and must
 be updated each frame using its own update method.
 ```lua
-group:update(deltatime)
+group:update(dt)
 ```
 
 To add a events to a group, the group's `:delay()` or `:recur()` methods should

@@ -25,18 +25,7 @@ local event = {}
 event.__index = event
 
 function event.new(parent, fn, delay, recur, err)
-  delay = tonumber(delay)
   err = err or 0
-  -- Error check
-  if type(delay) ~= "number" then
-    error("expected `delay` to be a number")
-  end
-  if delay < 0 then
-    error("expected `delay` of zero or greater")
-  end
-  if not iscallable(fn) then
-    error("expected `fn` to be callable")
-  end
   -- Create and return event
   return setmetatable({
     parent  = parent,
@@ -124,6 +113,17 @@ end
 
 
 function tick:event(fn, delay, recur)
+  delay = tonumber(delay)
+  -- Error check
+  if not iscallable(fn) then
+    error("expected `fn` to be callable")
+  end
+  if type(delay) ~= "number" then
+    error("expected `delay` to be a number")
+  end
+  if delay < 0 then
+    error("expected `delay` of zero or greater")
+  end
   -- If, factoring in the timing error, the event should happen *now* the
   -- function is immediately called and the error is temporarily carried
   -- through. This assures nested events with delays shorter than the update()

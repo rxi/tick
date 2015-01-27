@@ -17,15 +17,22 @@ local iscallable = function(x)
   return mt and mt.__call ~= nil
 end
 
+local noop = function()
+end
+
 
 local event = {}
 event.__index = event
 
-function event.new(parent, fn, delay, recur)
+function event.new(parent, fn, delay, recur, err)
   delay = tonumber(delay)
+  err = err or 0
   -- Error check
   if type(delay) ~= "number" then
     error("expected `delay` to be a number")
+  end
+  if delay < 0 then
+    error("expected `delay` of zero or greater")
   end
   if not iscallable(fn) then
     error("expected `fn` to be callable")
@@ -34,7 +41,7 @@ function event.new(parent, fn, delay, recur)
   return setmetatable({
     parent  = parent,
     delay   = delay,
-    timer   = delay,
+    timer   = delay + err,
     fn      = fn,
     recur   = recur,
   }, event)
@@ -48,9 +55,10 @@ function event:after(fn, delay)
   end
   -- Chain event
   local oldfn = self.fn
-  local e = event.new(self.parent, fn, delay + self.parent.err, false)
+  local e = event.new(self.parent, fn, delay, false)
   self.fn = function()
     oldfn()
+    e.timer = e.timer + self.parent.err
     self.parent:add(e)
   end
   return e
@@ -115,13 +123,33 @@ function tick:update(dt)
 end
 
 
+function tick:event(fn, delay, recur)
+  -- If, factoring in the timing error, the event should happen *now* the
+  -- function is immediately called and the error is temporarily carried
+  -- through. This assures nested events with delays shorter than the update()
+  -- delta-time do not accumulate error; several nested events with very small
+  -- delays may end up being called on the same frame. A dummy event is created
+  -- and returned so :after() still functions correctly.
+  local d = delay + self.err
+  if d < 0 then
+    local err = self.err
+    self.err = d
+    fn()
+    self.err = err
+    return self:add(event.new(self, noop, delay, recur, self.err))
+  end
+  -- Create, add and return a normal event
+  return self:add(event.new(self, fn, delay, recur, self.err))
+end
+
+
 function tick:delay(fn, delay)
-  return self:add(event.new(self, fn, delay + self.err, false))
+  return self:event(fn, delay, false)
 end
 
 
 function tick:recur(fn, delay)
-  return self:add(event.new(self, fn, delay + self.err, true))
+  return self:event(fn, delay, true)
 end
 
 
